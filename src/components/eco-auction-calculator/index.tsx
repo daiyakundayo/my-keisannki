@@ -54,13 +54,13 @@ const EcoAuctionCalculator = () => {
   return (
     <section className="calculator">
       <div className="calculator__result">
-        <h2>エコオク仕入れ価格</h2>
+        <h2>エコオク計算機</h2>
         <p className="calculator__result-value">
           {procurementPrice === null ? '---' : currencyFormatter.format(procurementPrice)}
         </p>
         {procurementPrice !== null && procurementPrice < 0 && (
           <p className="calculator__result-warning">
-            希望利益や手数料が高いため、仕入れ可能価格がマイナスになっています。
+            希望利益や経費の条件を見直さないと仕入れがマイナスになります。
           </p>
         )}
       </div>
@@ -90,7 +90,7 @@ const EcoAuctionCalculator = () => {
               placeholder="例: 25000"
             />
           </div>
-          <p className="calculator__hint">任意の金額を直接入力してください。</p>
+          <p className="calculator__hint">1台あたりの販売予想金額を入力してください。</p>
         </div>
 
         <div className="calculator__field">
@@ -119,7 +119,7 @@ const EcoAuctionCalculator = () => {
             <span>{currencyFormatter.format(desiredProfitBounds.min)}</span>
             <span>{currencyFormatter.format(desiredProfitBounds.max)}</span>
           </div>
-          <p className="calculator__hint">スライダーで希望利益を 1,000 円刻みで調整できます。</p>
+          <p className="calculator__hint">スライダーで希望利益を 1,000 円単位で調整できます。</p>
         </div>
 
         <div className="calculator__field">
@@ -141,7 +141,7 @@ const EcoAuctionCalculator = () => {
               </button>
             ))}
           </div>
-          <p className="calculator__hint">ボタンから該当する販売送料を選択してください。</p>
+          <p className="calculator__hint">ボタンを押して想定される販売送料を選択してください。</p>
         </div>
 
         <div className="calculator__field">
@@ -163,7 +163,7 @@ const EcoAuctionCalculator = () => {
               </button>
             ))}
           </div>
-          <p className="calculator__hint">購入手数料は 550 円または 2,200 円から選択してください。</p>
+          <p className="calculator__hint">購入手数料は 550 円または 2,200 円から選択できます。</p>
         </div>
       </div>
     </section>

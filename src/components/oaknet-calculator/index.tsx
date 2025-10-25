@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { calculateProcurementPrice } from '../../core/procurement-calculator';
-import './styles.css';
+import { calculateOaknetProcurementPrice } from '../../core/oaknet-calculator';
+import '../procurement-calculator/styles.css';
 
 const desiredProfitBounds = {
   min: 3000,
@@ -9,6 +9,10 @@ const desiredProfitBounds = {
 } as const;
 
 const saleShippingOptions = [0, 160, 210, 215, 450, 750, 850, 1050, 1200, 1400] as const;
+const purchaseFeeRateOptions = [
+  { rate: 0.06, label: '6%' },
+  { rate: 0.04, label: '4%' }
+] as const;
 
 const currencyFormatter = new Intl.NumberFormat('ja-JP', {
   style: 'currency',
@@ -19,11 +23,11 @@ const clamp = (value: number, min: number, max: number) => {
   return Math.min(Math.max(value, min), max);
 };
 
-const ProcurementCalculator = () => {
+const OaknetCalculator = () => {
   const [salePriceInput, setSalePriceInput] = useState<string>('');
   const [desiredProfit, setDesiredProfit] = useState<number>(desiredProfitBounds.min);
   const [saleShippingIndex, setSaleShippingIndex] = useState<number>(0);
-  const [purchaseShippingInput, setPurchaseShippingInput] = useState<string>('');
+  const [purchaseFeeRateIndex, setPurchaseFeeRateIndex] = useState<number>(0);
 
   const salePrice = useMemo(() => {
     if (salePriceInput.trim() === '') {
@@ -35,32 +39,34 @@ const ProcurementCalculator = () => {
   }, [salePriceInput]);
 
   const saleShippingCost = saleShippingOptions[saleShippingIndex] ?? saleShippingOptions[0];
-  const purchaseShippingCost = useMemo(() => {
-    if (purchaseShippingInput.trim() === '') {
+  const selectedPurchaseFeeRate =
+    purchaseFeeRateOptions[purchaseFeeRateIndex]?.rate ?? purchaseFeeRateOptions[0].rate;
+
+  const purchaseFeeAmount = useMemo(() => {
+    if (!Number.isFinite(salePrice) || salePrice <= 0) {
       return 0;
     }
 
-    const parsed = Number(purchaseShippingInput.replace(/,/g, ''));
-    return Number.isNaN(parsed) ? 0 : parsed;
-  }, [purchaseShippingInput]);
+    return Math.round(salePrice * selectedPurchaseFeeRate);
+  }, [salePrice, selectedPurchaseFeeRate]);
 
   const procurementPrice = useMemo(() => {
     if (!Number.isFinite(salePrice) || salePrice <= 0) {
       return null;
     }
 
-    return calculateProcurementPrice({
+    return calculateOaknetProcurementPrice({
       salePrice,
       desiredProfit,
       saleShippingCost,
-      purchaseShippingCost
+      purchaseFeeRate: selectedPurchaseFeeRate
     });
-  }, [salePrice, desiredProfit, saleShippingCost, purchaseShippingCost]);
+  }, [salePrice, desiredProfit, saleShippingCost, selectedPurchaseFeeRate]);
 
   return (
     <section className="calculator">
       <div className="calculator__result">
-        <h2>通常仕入れ計算機</h2>
+        <h2>オークネット仕入れ上限</h2>
         <p className="calculator__result-value">
           {procurementPrice === null ? '---' : currencyFormatter.format(procurementPrice)}
         </p>
@@ -74,7 +80,7 @@ const ProcurementCalculator = () => {
       <div className="calculator__grid">
         <div className="calculator__field">
           <div className="calculator__field-header">
-            <label htmlFor="salePrice" className="calculator__label">
+            <label htmlFor="oaknetSalePrice" className="calculator__label">
               販売予想金額
             </label>
             <span className="calculator__value">
@@ -84,8 +90,8 @@ const ProcurementCalculator = () => {
           <div className="calculator__input-wrapper">
             <span className="calculator__prefix">¥</span>
             <input
-              id="salePrice"
-              name="salePrice"
+              id="oaknetSalePrice"
+              name="oaknetSalePrice"
               type="number"
               className="calculator__input"
               min={0}
@@ -101,14 +107,14 @@ const ProcurementCalculator = () => {
 
         <div className="calculator__field">
           <div className="calculator__field-header">
-            <label htmlFor="desiredProfit" className="calculator__label">
+            <label htmlFor="oaknetDesiredProfit" className="calculator__label">
               希望利益額
             </label>
             <span className="calculator__value">{currencyFormatter.format(desiredProfit)}</span>
           </div>
           <input
-            id="desiredProfit"
-            name="desiredProfit"
+            id="oaknetDesiredProfit"
+            name="oaknetDesiredProfit"
             type="range"
             className="calculator__slider"
             min={desiredProfitBounds.min}
@@ -152,31 +158,30 @@ const ProcurementCalculator = () => {
 
         <div className="calculator__field">
           <div className="calculator__field-header">
-            <label htmlFor="purchaseShipping" className="calculator__label">
-              仕入送料
-            </label>
-            <span className="calculator__value">{currencyFormatter.format(purchaseShippingCost)}</span>
+            <span className="calculator__label">購入手数料</span>
+            <span className="calculator__value">{currencyFormatter.format(purchaseFeeAmount)}</span>
           </div>
-          <div className="calculator__input-wrapper">
-            <span className="calculator__prefix">¥</span>
-            <input
-              id="purchaseShipping"
-              name="purchaseShipping"
-              type="number"
-              className="calculator__input"
-              min={0}
-              step={10}
-              inputMode="numeric"
-              value={purchaseShippingInput}
-              onChange={(event) => setPurchaseShippingInput(event.target.value)}
-              placeholder="例: 750"
-            />
+          <div className="calculator__button-group" role="group" aria-label="購入手数料率">
+            {purchaseFeeRateOptions.map((option, index) => (
+              <button
+                key={option.label}
+                type="button"
+                className={`calculator__chip${
+                  purchaseFeeRateIndex === index ? ' calculator__chip--active' : ''
+                }`}
+                onClick={() => setPurchaseFeeRateIndex(index)}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
-          <p className="calculator__hint">仕入れにかかる送料を任意の金額で入力してください。</p>
+          <p className="calculator__hint">
+            ボタンを切り替えて手数料率（6% / 4%）を選択してください。
+          </p>
         </div>
       </div>
     </section>
   );
 };
 
-export default ProcurementCalculator;
+export default OaknetCalculator;
