@@ -47,8 +47,13 @@ const OaknetCalculator = () => {
       return 0;
     }
 
-    return Math.round(salePrice * selectedPurchaseFeeRate);
-  }, [salePrice, selectedPurchaseFeeRate]);
+    const afterInitialDeduction = salePrice * 0.9;
+    const afterDesiredProfit = afterInitialDeduction - desiredProfit;
+    const afterSaleShipping = afterDesiredProfit - saleShippingCost;
+    const feeBase = Math.max(afterSaleShipping, 0);
+
+    return Math.round(feeBase * selectedPurchaseFeeRate);
+  }, [salePrice, desiredProfit, saleShippingCost, selectedPurchaseFeeRate]);
 
   const procurementPrice = useMemo(() => {
     if (!Number.isFinite(salePrice) || salePrice <= 0) {
@@ -175,9 +180,7 @@ const OaknetCalculator = () => {
               </button>
             ))}
           </div>
-          <p className="calculator__hint">
-            ボタンを切り替えて手数料率（6% / 4%）を選択してください。
-          </p>
+          <p className="calculator__hint">ボタンを切り替えて手数料率（6% / 4%）を選択してください。</p>
         </div>
       </div>
     </section>

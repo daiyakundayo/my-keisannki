@@ -8,7 +8,7 @@ const formatCurrency = (value: number) =>
   }).format(value);
 
 describe('オークネット計算機', () => {
-  it('入力値と手数料率に応じた仕入れ上限を表示する', async () => {
+  it('入力値と手数料率に応じて仕入れ上限を計算する', async () => {
     render(<OaknetCalculator />);
 
     const salePriceInput = screen.getByLabelText('販売予想金額') as HTMLInputElement;
@@ -23,7 +23,7 @@ describe('オークネット計算機', () => {
     fireEvent.click(saleShippingButton);
 
     await waitFor(() => {
-      expect(screen.getByText(formatCurrency(9945))).toBeInTheDocument();
+      expect(screen.getByText(formatCurrency(10364))).toBeInTheDocument();
     });
   });
 
@@ -45,7 +45,7 @@ describe('オークネット計算機', () => {
     fireEvent.click(feeRateButton);
 
     await waitFor(() => {
-      expect(screen.getByText(formatCurrency(10305))).toBeInTheDocument();
+      expect(screen.getByText(formatCurrency(10584))).toBeInTheDocument();
     });
   });
 });

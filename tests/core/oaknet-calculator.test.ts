@@ -10,17 +10,17 @@ describe('calculateOaknetProcurementPrice', () => {
       purchaseFeeRate: 0.06
     });
 
-    expect(procurementPrice).toBe(9945);
+    expect(procurementPrice).toBe(10364);
   });
 
-  it('希望利益が大きすぎる場合はマイナスになるケースを返す', () => {
+  it('条件が厳しい場合にマイナスの仕入れ額を返す', () => {
     const procurementPrice = calculateOaknetProcurementPrice({
       salePrice: 10000,
-      desiredProfit: 7500,
+      desiredProfit: 9000,
       saleShippingCost: 1400,
       purchaseFeeRate: 0.06
     });
 
-    expect(procurementPrice).toBe(-450);
+    expect(procurementPrice).toBe(-1260);
   });
 });
